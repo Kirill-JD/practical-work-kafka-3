@@ -156,7 +156,7 @@ public class KafkaProcess {
                          Serdes.ByteArray().serializer(),
                          "CensorshipProcessor");
 
-        System.out.println("Топология: " + topology.describe());
+        log.info("Топология: {}", topology.describe());
 
         // Создаем приложение Kafka Streams
         return new KafkaStreams(topology, props);
@@ -208,8 +208,10 @@ public class KafkaProcess {
 
         var censorshipWords = List.of("пупа", "лупа");
         try (KafkaProducer<String, Boolean> producer = new KafkaProducer<>(producerProps)) {
-            censorshipWords.forEach(
-                    word -> producer.send(new ProducerRecord<>(CENSORSHIP_WORDS_TOPIC, word, true)));
+            censorshipWords.forEach(word -> {
+                producer.send(new ProducerRecord<>(CENSORSHIP_WORDS_TOPIC, word, true));
+                log.info("Отправлено тестовое сообщение с запрещённым словом '{}'", word);
+            });
             producer.flush();
         } catch (Exception e) {
             log.error("Не удалось отправить данные в топик '{}'", CENSORSHIP_WORDS_TOPIC, e);
